@@ -1,4 +1,5 @@
-﻿module FsBuild
+﻿module FsBuild.BuildXml
+
 
 open System.Xml.Linq
 

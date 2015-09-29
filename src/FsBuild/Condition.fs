@@ -1,4 +1,5 @@
-﻿namespace Templater
+﻿namespace FsBuild
+
 open System
 open System.Xml
 open System.Xml.Linq
@@ -13,6 +14,9 @@ open System.Text
 // https://msdn.microsoft.com/en-us/library/5dy88c2e.aspx
 
 
+type Condition (expr: Expr<bool>) =
+    member __.Expr = expr
+            
 
 // VSIX Extension Schema 2.0 Reference 
 // https://msdn.microsoft.com/en-us/library/hh696828.aspx
@@ -69,13 +73,10 @@ module Condition =
         loop expr
         string sb
 
-    type Condition (expr: Expr<bool>) =
-        member __.Expr = expr
-            
+
     let (.<>.) (c1:string)  (c2:string)  =  Condition(<@ c1 <> c2 @>)
     let (.>=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 >= c2 @>)
     let (.<=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 <= c2 @>)
-   
   
 
 

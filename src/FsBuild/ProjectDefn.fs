@@ -1,4 +1,4 @@
-﻿namespace Templater
+﻿namespace FsBuild
 
 open System.Xml
 open Microsoft.FSharp.Quotations
@@ -112,7 +112,7 @@ module Common =
 // VSIX Extension Schema 2.0 Reference 
 // https://msdn.microsoft.com/en-us/library/hh696828.aspx
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module Condition =
+module Condition' =
 
 // MSBuild Conditions
 // https://msdn.microsoft.com/en-us/library/7szfhaft.aspx

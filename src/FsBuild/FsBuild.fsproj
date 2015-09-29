@@ -9,8 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>FsBuild</RootNamespace>
     <AssemblyName>FsBuild</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <Name>FsBuild</Name>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -57,11 +57,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Reference\MinimalXMLDSL.fsx" />
-    <None Include="Reference\MSBuild.Community.Tasks.ReadMe.md" />            
+    <None Include="Reference\MSBuild.Community.Tasks.ReadMe.md" />
     <Compile Include="Reference\LightXMLDSL.fs" />
     <Compile Include="Extensions.fs" />
     <Compile Include="Condition.fs" />
-    <Compile Include="FsBuild.fs" />
+    <Compile Include="BuildXml.fs" />
     <Compile Include="ProjectDefn.fs" />
     <None Include="paket.references" />
     <None Include="paket.template" />

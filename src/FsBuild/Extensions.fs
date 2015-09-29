@@ -1,4 +1,4 @@
-﻿namespace Templater
+﻿namespace FsBuild
 
 open System
 open System.Runtime.CompilerServices

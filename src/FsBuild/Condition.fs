@@ -29,7 +29,7 @@ module Condition =
     let squote (str:string) =
         String.Concat["'";str;"'"]
 
-    let condstr expr =
+    let condstr expr = 
         let sb = StringBuilder()
         let inline append (s:^a) = sb.Append s |> ignore
         let inline appendstr x   = string x |> append
@@ -78,7 +78,7 @@ module Condition =
     let (.>=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 >= c2 @>)
     let (.<=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 <= c2 @>)
   
-
+    let s = %Filename
 
 
 
@@ -97,27 +97,27 @@ module Condition =
 //        override self.ToString() =
 //           condstr self.Expr 
 
-
-    let (.=.)  (c1:string) (c2:string) =  
-        let c1', c2' = squote c1, squote c2
-        Condition(<@ c1' = c2' @>)
-
-
-
-    let (.||.) (c1:Condition)(c2:Condition) =
-            Condition(<@ %c1.Expr || %c2.Expr @>)
-
-    let (.&&.) (c1:Condition)(c2:Condition) =
-            Condition(<@ %c1.Expr && %c2.Expr @>)
-
-
-    let makecondition (combo:'a->'a->Condition) (arg1:'a) (arg2:'a) =
-        combo arg1 arg2
-
-    let z = makecondition (.<>.) "one" "two"
-    let z1 = makecondition (.>=.) 23.0m  233.m
-    let z2 = makecondition (.||.)   z z1
-
+//
+//    let (.=.)  (c1:string) (c2:string) =  
+//        let c1', c2' = squote c1, squote c2
+//        Condition(<@ c1' = c2' @>)
+//
+//
+//
+//    let (.||.) (c1:Condition)(c2:Condition) =
+//            Condition(<@ %c1.Expr || %c2.Expr @>)
+//
+//    let (.&&.) (c1:Condition)(c2:Condition) =
+//            Condition(<@ %c1.Expr && %c2.Expr @>)
+//
+//
+//    let makecondition (combo:'a->'a->Condition) (arg1:'a) (arg2:'a) =
+//        combo arg1 arg2
+//
+//    let z = makecondition (.<>.) "one" "two"
+//    let z1 = makecondition (.>=.) 23.0m  233.m
+//    let z2 = makecondition (.||.)   z z1
+//
 
 //    type ConditionBuilder () =
 //        let data = xattr "Condition" []

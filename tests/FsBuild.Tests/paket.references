@@ -1,2 +1,4 @@
 NUnit
 NUnit.Runners
+fscheck
+fscheck.nunit

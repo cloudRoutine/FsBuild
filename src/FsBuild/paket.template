@@ -1,0 +1,23 @@
+type project
+owners
+    Jared Hester
+authors 
+    Jared Hester
+projectUrl
+    http://github.com/cloudroutine/FsBuild
+iconUrl
+    https://raw.githubusercontent.com/cloudroutine/FsBuild/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/cloudroutine/FsBuild/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    FSharp F# MSBuild DSL EDSL
+summary
+    EDSL for .fsproj files and MSBuild Tasks
+description
+    EDSL for .fsproj files and MSBuild Tasks
+
+

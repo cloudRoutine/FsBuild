@@ -11,11 +11,14 @@ let inline getCondition x = (^a : (member Condition : Condition ) x)
 /// Imports the contents of one project file into another project file.
 // https://msdn.microsoft.com/en-us/library/92x05xfs.aspx
 type Import  =
- {  /// The path of the project file to import. The path can include wildcards. 
+ {  /// Required attribute - The path of the project file to import. The path can include wildcards. 
     /// The matching files are imported in sorted order.
     Project     : string
     Condition   : Condition option 
- }
+ }  static member empty = { Project = ""; Condition = None }
+    
+
+let import project condition = { Project = project; Condition = condition }
 
 
 /// Contains a collection of Import elements that are grouped under an optional condition. 
@@ -24,7 +27,17 @@ type ImportGroup =
  {  Condition : Condition option
     Imports : Import list   
  } 
+    /// Add an Import to the front of the ImportGroup's collection
+    member self.Cons ipr = { self with Imports = ipr::self.Imports}
+    /// Add an Import to the end of the ImportGroup's collection
+    member self.Conj ipr = { self with Imports = List.conj ipr self.Imports  }
+    /// Append a list of imorts to the ImportGroup's collection
+    member self.Append ls = { self with Imports = self.Imports @ ls}
+    /// New ImportGroup with a different Condition
+    member self.WithCondition cond = { self with Condition = Some cond }
 
+    /// An empty ImportGroup
+    static member empty = { Condition = None; Imports = [] }
 
 
 /// Contains a user-defined item metadata key, which contains the item
@@ -136,6 +149,7 @@ type Output =
     PropertyName : string
     ItemName : string
     }
+    
 
 
 
@@ -386,6 +400,12 @@ and Otherwise =
     /// more PropertyGroup elements in an Otherwise element.
     ProperyGroupList: PropertyGroup list
  }
+    static member Default = {
+        ChooseList       = []
+        ItemGroupList    = []
+        ProperyGroupList = []
+    }
+
 (*
     The Choose, When, and Otherwise elements are used together to provide a way to select 
     one section of code to execute out of a number of possible alternatives.

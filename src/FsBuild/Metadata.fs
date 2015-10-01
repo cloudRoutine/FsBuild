@@ -3,11 +3,7 @@
 [<AutoOpen>]
 module  Metadata =
     
-    /// Unary operator to add parentheses around a string  
-    /// to create msbuild metadata properties              
-    /// e.g. `%(FullPath)` , `%(Directory)`                
-    let ( ~% ) str =  sprintf "%%(%s)" str
-
+    
     /// Contains the full path of the item. For example:
     /// C:\MyProject\Source\Program.cs
     let FullPath = "FullPath"

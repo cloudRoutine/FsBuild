@@ -14,8 +14,7 @@ open System.Text
 // https://msdn.microsoft.com/en-us/library/5dy88c2e.aspx
 
 
-type Condition (expr: Expr<bool>) =
-    member __.Expr = expr
+
             
 
 // VSIX Extension Schema 2.0 Reference 
@@ -61,6 +60,7 @@ module Condition =
                 (_, _,lexp::[rexp])     ->  paren lexp; append " == "; paren rexp
             | SpecificCall <@(=)@> 
                 (_, _, hd::tl)          ->  paren hd; append " == "; loopls tl
+
             | SpecificCall <@(>)@>
                 (_, _, hd::tl)          ->  paren hd; append " &gt; "; loopls tl
             | SpecificCall <@(<)@>
@@ -74,20 +74,25 @@ module Condition =
         string sb
 
 
-    let (.<>.) (c1:string)  (c2:string)  =  Condition(<@ c1 <> c2 @>)
-    let (.>=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 >= c2 @>)
-    let (.<=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 <= c2 @>)
-  
-    let s = %Filename
-
-
-
-
-
-
-//        static member inline (==) (c1:Condition, c2:Condition) =
-//            Condition(<@ %c1.Expr = %c2.Expr @>)
+    type Condition private (expr: Expr<bool>) =
+        member __.Expr = expr
 //
+//
+//    let (.<>.) (c1:string)  (c2:string)  =  Condition(<@ c1 <> c2 @>)
+//    let (.>=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 >= c2 @>)
+//    let (.<=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 <= c2 @>)
+//  
+//
+//    // where condition is a cexpr
+//    //condition { (%"ProjectName" .=. "FirstProject") .||. (%"ProjectName" .=. "SecondProject") }
+//
+//
+//
+//
+//
+//    let (==)   (c1:Condition)(c2:Condition) = Condition <@ %c1.Expr = %c2.Expr @>
+//    let (.||.) (c1:Condition)(c2:Condition) = Condition <@ %c1.Expr || %c2.Expr @>
+//  
 //        static member inline (!=) (c1:Condition, c2:Condition) =
 //            Condition(<@ %c1.Expr <> %c2.Expr @>)
 //
@@ -104,8 +109,6 @@ module Condition =
 //
 //
 //
-//    let (.||.) (c1:Condition)(c2:Condition) =
-//            Condition(<@ %c1.Expr || %c2.Expr @>)
 //
 //    let (.&&.) (c1:Condition)(c2:Condition) =
 //            Condition(<@ %c1.Expr && %c2.Expr @>)

@@ -58,16 +58,14 @@
   <ItemGroup>
     <Compile Include="Prelude.fs" />
     <Compile Include="Extensions.fs" />
+    <Compile Include="Structure.fs" />
     <Compile Include="Metadata.fs" />
     <Compile Include="Condition.fs" />
-    <Compile Include="BuildXml.fs" />
-    <Compile Include="ProjectDefn.fs" />
     <None Include="Experiment.fsx" />
     <None Include="paket.references" />
     <None Include="paket.template" />
-    <None Include="Reference\MinimalXMLDSL.fsx" />
     <None Include="Reference\MSBuild.Community.Tasks.ReadMe.md" />
-    <None Include="Reference\LightXMLDSL.fs" />
+    <Compile Include="Reference\BuildXml.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

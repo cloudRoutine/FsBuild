@@ -68,8 +68,6 @@
     <None Include="paket.template" />
     <None Include="Reference\MSBuild.Community.Tasks.ReadMe.md" />
     <Compile Include="Reference\BuildXml.fs" />
-    <None Include="Scripts\load-references.fsx" />
-    <None Include="Scripts\load-project.fsx" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

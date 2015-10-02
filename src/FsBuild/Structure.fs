@@ -1,6 +1,7 @@
 ﻿module FsBuild.Structure
 
 open System
+open System.Text
 
 // placeholder
 type Condition = string
@@ -10,12 +11,18 @@ let inline getCondition x = (^a : (member Condition : Condition ) x)
 
 /// Imports the contents of one project file into another project file.
 // https://msdn.microsoft.com/en-us/library/92x05xfs.aspx
+[<StructuredFormatDisplay("{display}")>]
 type Import  =
  {  /// Required attribute - The path of the project file to import. The path can include wildcards. 
     /// The matching files are imported in sorted order.
     Project     : string
     Condition   : Condition option 
  }  static member empty = { Project = ""; Condition = None }
+    member private self.display =
+        sprintf "{Import: Project - %s | Condition - %s}"
+            self.Project (  if isNone self.Condition 
+                            then "None" else getValue self.Condition)
+        
     
 
 let import project condition = { Project = project; Condition = condition }
@@ -23,6 +30,7 @@ let import project condition = { Project = project; Condition = condition }
 
 /// Contains a collection of Import elements that are grouped under an optional condition. 
 // https://msdn.microsoft.com/en-us/library/ff606262.aspx
+[<StructuredFormatDisplay("ImportGroup{\n{display\n}")>]
 type ImportGroup =
  {  Condition : Condition option
     Imports : Import list   
@@ -38,6 +46,13 @@ type ImportGroup =
 
     /// An empty ImportGroup
     static member empty = { Condition = None; Imports = [] }
+    member private self.display =
+        (StringBuilder().AppendLine(
+            "Condition : " + (  if Option.isSome self.Condition 
+                                then self.Condition.Value else ""))
+        |> List.fold (fun (sb:StringBuilder) (rcd:Import) -> sb.AppendLine(string rcd)))
+            self.Imports |> string
+    override self.ToString() = sprintf "ImportGroup\n%s" self.display
 
 
 /// Contains a user-defined item metadata key, which contains the item
@@ -80,15 +95,22 @@ type Item =
  }
 
 
- /// Contains a set of user-defined Item elements. Every item used in a MSBuild 
- /// project must be specified as a child of an ItemGroup element.
- // https://msdn.microsoft.com/en-us/library/646dk05y.aspx
+/// Contains a set of user-defined Item elements. Every item used in a MSBuild 
+/// project must be specified as a child of an ItemGroup element.
+// https://msdn.microsoft.com/en-us/library/646dk05y.aspx
+[<StructuredFormatDisplay("ItemGroup\n{display}")>]
 type ItemGroup =
  {  Condition : Condition option
     /// Defines the inputs for the build process. There may be zero or more Item elements in an ItemGroup.
     Children : Item list
-    }
-
+    } member private self.display =
+        (StringBuilder().AppendLine(
+            "Condition : " + (  if Option.isSome self.Condition 
+                                then self.Condition.Value else ""))
+        |> List.fold (fun (sb:StringBuilder) (rcd:Item) -> sb.AppendLine(string rcd)))
+            self.Children |> string
+    override self.ToString() =
+        sprintf "ItemGroup\n%s" self.display
 /// The ItemDefinitionGroup element lets you define a set of Item Definitions, 
 /// which are metadata values that are applied to all items in the project, by default. 
 //  https://msdn.microsoft.com/en-us/library/bb629392.aspx

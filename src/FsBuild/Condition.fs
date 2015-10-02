@@ -74,8 +74,9 @@ module Condition =
         string sb
 
 
-    type Condition private (expr: Expr<bool>) =
-        member __.Expr = expr
+
+
+
 //
 //
 //    let (.<>.) (c1:string)  (c2:string)  =  Condition(<@ c1 <> c2 @>)

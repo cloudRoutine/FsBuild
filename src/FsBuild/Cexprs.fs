@@ -15,10 +15,8 @@ type ImportGroupBuilder() =
     member __.Condition (x:ImportGroup, cnd) =
      { x with Condition = Some cnd }
 
-
     [<CustomOperation("Import")>]
     member __.Import (x:ImportGroup, imp)  = x.Cons imp
-     
 
     [<CustomOperation("ImportProject")>]
     member __.ImportProject (x:ImportGroup, proj:string)  =
@@ -27,6 +25,7 @@ type ImportGroupBuilder() =
     [<CustomOperation("ImportSeq")>]
     member __.ImportSeq (x:ImportGroup, col: #seq<Import> )  =
         x.Append (Seq.toList col)
+
 
 
 

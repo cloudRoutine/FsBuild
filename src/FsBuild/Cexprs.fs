@@ -3,34 +3,31 @@
 open System
 open FsBuild.Structure
 
-
+type CustOp = CustomOperationAttribute
 
 type ImportBuilder() =
     member __.Yield (_) =  Import.empty
     /// Set the Condition for the ImportGroup being generated
-    [<CustomOperation("Condition")>]
+    [<CustOp("Condition")>]
     member __.Condition (x:Import, cnd) =
      { x with Condition = Some cnd }
-
 
 
 type ImportGroupBuilder() =
     // produce an empty importgroup if nothing is set in the cexpr
     member __.Yield (_) = ImportGroup.empty
-
-    [<CustomOperation("Condition")>]
     /// Set the Condition for the ImportGroup being generated
-    member __.Condition (x:ImportGroup, cnd) =
+    [<CustOp("Condition")>]   member __.Condition (x:ImportGroup, cnd) =
      { x with Condition = Some cnd }
 
-    [<CustomOperation("Import")>]
+    [<CustOp("Import")>]
     member __.Import (x:ImportGroup, imp)  = x.Cons imp
 
-    [<CustomOperation("ImportProject")>]
+    [<CustOp("ImportProject")>]
     member __.ImportProject (x:ImportGroup, proj:string)  =
         x.Cons { Project = proj; Condition = None}
 
-    [<CustomOperation("ImportSeq")>]
+    [<CustOp("ImportSeq")>]
     member __.ImportSeq (x:ImportGroup, col: #seq<Import> )  =
         x.Append (Seq.toList col)
 

@@ -2,9 +2,8 @@
 
 open System
 open System.Text
+open FsBuild.Condition
 
-// placeholder
-type Condition = string
 
 let inline getChildren  x = (^a : (member Children  : 'c list ) x)
 let inline getCondition x = (^a : (member Condition : Condition ) x)
@@ -21,7 +20,7 @@ type Import  =
     member private self.display =
         sprintf "{Import: Project - %s | Condition - %s}"
             self.Project (  if isNone self.Condition 
-                            then "None" else getValue self.Condition)
+                            then "None" else getValue self.Condition |> string )
         
     
 
@@ -49,7 +48,7 @@ type ImportGroup =
     member private self.display =
         (StringBuilder().AppendLine(
             "Condition : " + (  if Option.isSome self.Condition 
-                                then self.Condition.Value else ""))
+                                then self.Condition.Value.ToString() else ""))
         |> List.fold (fun (sb:StringBuilder) (rcd:Import) -> sb.AppendLine(string rcd)))
             self.Imports |> string
     override self.ToString() = sprintf "ImportGroup\n%s" self.display
@@ -106,7 +105,7 @@ type ItemGroup =
     } member private self.display =
         (StringBuilder().AppendLine(
             "Condition : " + (  if Option.isSome self.Condition 
-                                then self.Condition.Value else ""))
+                                then string self.Condition.Value else ""))
         |> List.fold (fun (sb:StringBuilder) (rcd:Item) -> sb.AppendLine(string rcd)))
             self.Children |> string
     override self.ToString() =
@@ -171,9 +170,6 @@ type Output =
     PropertyName : string
     ItemName     : string
     }
-    
-
-
 
 
 /// Causes one or more targets to execute, if the ContinueOnError attribute is false for a failed task.
@@ -184,7 +180,6 @@ type OnError =
     ExecuteTargets : string list
     Condition : Condition option
     }
-
 
 
 /// Contains information about a specific parameter for a task that is generated 

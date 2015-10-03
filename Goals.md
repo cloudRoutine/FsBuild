@@ -16,7 +16,7 @@
       finding the right assemblies easier
 *   Implement Visual Studio Template Schema Reference  
     _https://msdn.microsoft.com/en-us/library/xwkxbww4.aspx_
-
-
+*   Generate VSIX compliant plugins  
+    _https://msdn.microsoft.com/en-us/library/hh696828.aspx_
 
 

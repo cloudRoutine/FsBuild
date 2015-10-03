@@ -58,10 +58,10 @@
   <ItemGroup>
     <Compile Include="Prelude.fs" />
     <Compile Include="Extensions.fs" />
+    <Compile Include="Condition.fs" />
     <Compile Include="Structure.fs" />
     <Compile Include="Cexprs.fs" />
     <Compile Include="Metadata.fs" />
-    <Compile Include="Condition.fs" />
     <None Include="Experiment.fsx" />
     <None Include="cexpr_test.fsx" />
     <None Include="paket.references" />

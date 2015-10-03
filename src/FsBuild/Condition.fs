@@ -74,62 +74,26 @@ module Condition =
         string sb
 
 
+// TODO - TRY TO IMPLEMENT EXTENSION OPERATORS C# EXTENSION METHOD STYLE
+
+    type Cond = private { Expr:bool Expr }
+           
+    let (|=| ) (c1:string)  (c2:string)  =  {Expr = <@ c1 = c2 @>}
+    let (|<>|) (c1:string)  (c2:string)  =  {Expr = <@ c1 <> c2 @>}
+    let (|>=|) (c1:decimal) (c2:decimal) =  {Expr = <@ c1 >= c2 @>}
+    let (|<=|) (c1:decimal) (c2:decimal) =  {Expr = <@ c1 <= c2 @>}
+    let (|&| ) (c1:Cond)    (c2:Cond)    =  {Expr = <@ %c1.Expr && %c2.Expr @>}
+    let (|!| ) (c1:Cond)    (c2:Cond)    =  {Expr = <@ %c1.Expr || %c2.Expr @>}
+    let Not    (cd:Cond)                 =  {Expr = <@ not %cd.Expr @>}
+    
+    
+    // Example of condition construction in action
+
+    let private vnum = 192.2323m
+
+    let private c  = ("Proj1"|=|"Proj2")|!|(20.8M|>=|vnum)|&|("Proj2"|<>|"") 
 
 
-
-//
-//
-//    let (.<>.) (c1:string)  (c2:string)  =  Condition(<@ c1 <> c2 @>)
-//    let (.>=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 >= c2 @>)
-//    let (.<=.) (c1:decimal) (c2:decimal) =  Condition(<@ c1 <= c2 @>)
-//  
-//
-//    // where condition is a cexpr
-//    //condition { (%"ProjectName" .=. "FirstProject") .||. (%"ProjectName" .=. "SecondProject") }
-//
-//
-//
-//
-//
-//    let (==)   (c1:Condition)(c2:Condition) = Condition <@ %c1.Expr = %c2.Expr @>
-//    let (.||.) (c1:Condition)(c2:Condition) = Condition <@ %c1.Expr || %c2.Expr @>
-//  
-//        static member inline (!=) (c1:Condition, c2:Condition) =
-//            Condition(<@ %c1.Expr <> %c2.Expr @>)
-//
-//        static member op_Explicit (cond:Condition) : string =
-//            condstr cond.Expr
-//
-//        override self.ToString() =
-//           condstr self.Expr 
-
-//
-//    let (.=.)  (c1:string) (c2:string) =  
-//        let c1', c2' = squote c1, squote c2
-//        Condition(<@ c1' = c2' @>)
-//
-//
-//
-//
-//    let (.&&.) (c1:Condition)(c2:Condition) =
-//            Condition(<@ %c1.Expr && %c2.Expr @>)
-//
-//
-//    let makecondition (combo:'a->'a->Condition) (arg1:'a) (arg2:'a) =
-//        combo arg1 arg2
-//
-//    let z = makecondition (.<>.) "one" "two"
-//    let z1 = makecondition (.>=.) 23.0m  233.m
-//    let z2 = makecondition (.||.)   z z1
-//
-
-//    type ConditionBuilder () =
-//        let data = xattr "Condition" []
-//        member __.Zero () = data
-//
-//    let cond expr = Condition expr
-//        
-//    let x = ((cond <@ 2 = 3 @>) !=  (cond <@ not (10 <> 4) @>) ) |> string
 
 
 

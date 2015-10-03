@@ -169,7 +169,7 @@ type Output =
         This attribute cannot be used if PropertyName is also being used.
     *)
     PropertyName : string
-    ItemName : string
+    ItemName     : string
     }
     
 

@@ -25,4 +25,9 @@ module Prelude =
 
 
     let inline getChildren x = (^a : (member Children : 'c list ) x)
-    let inline getValue x = (^a : (member Value : 'v ) x)
+    let inline getValue x    = (^a : (member Value : 'v ) x)
+
+    let inline isNone x = Option.isNone x
+    let inline isSome x = Option.isSome x
+
+

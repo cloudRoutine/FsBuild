@@ -5,8 +5,16 @@ open FsBuild.Structure
 
 
 
-type ImportGroupBuilder() =
+type ImportBuilder() =
+    member __.Yield (_) =  Import.empty
+    /// Set the Condition for the ImportGroup being generated
+    [<CustomOperation("Condition")>]
+    member __.Condition (x:Import, cnd) =
+     { x with Condition = Some cnd }
 
+
+
+type ImportGroupBuilder() =
     // produce an empty importgroup if nothing is set in the cexpr
     member __.Yield (_) = ImportGroup.empty
 

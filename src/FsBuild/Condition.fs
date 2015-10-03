@@ -41,13 +41,13 @@ let condstr expr =
         | SCall<@(>)@>(_,_,hd::tl) ->  pals hd " &gt; " tl
         | SCall<@(<)@>(_,_,hd::tl) ->  pals hd " &lt; " tl
         | SCall<@(>=)@>(_,_,hd::tl) -> pals hd " &gt;= "  tl
-        | SCall <@(<=)@>(_,_,hd::tl) -> pals hd " &lt;= " tl
+        | SCall<@(<=)@>(_,_,hd::tl) -> pals hd " &lt;= " tl
         | _ -> (string >> append) expr
     loop expr
     string sb
 
    
-type Condition = private { Expr:bool Expr }
+type Condition = { Expr: bool Expr }
 type hex = Hex 
 let  hex = Hex
     
@@ -101,7 +101,7 @@ let inline (|<|)  a b = (?<-) GreaterOp a b
 let inline (|>=|) a b = (?<-) LessEqualsOp a b
 let inline (|<=|) a b = (?<-) GreaterEqualsOp a b
 
-let (|&|) (c1:Cond) (c2:Cond) = {Expr = <@ %c1.Expr && %c2.Expr @>}
-let (|!|) (c1:Cond) (c2:Cond) = {Expr = <@ %c1.Expr || %c2.Expr @>}
-let  Not  (cd:Cond)           = {Expr = <@ not %cd.Expr @>}
+let (|&|) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr && %c2.Expr @>}
+let (|!|) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr || %c2.Expr @>}
+let  Not  (cd:Condition)                = {Expr = <@ not %cd.Expr @>}
 

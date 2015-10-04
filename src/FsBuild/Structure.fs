@@ -10,7 +10,7 @@ let inline getCondition x = (^a : (member Condition : Condition ) x)
 
 /// Imports the contents of one project file into another project file.
 // https://msdn.microsoft.com/en-us/library/92x05xfs.aspx
-[<StructuredFormatDisplay("{display}")>]
+[<StructuredFormatDisplay "{display}">]
 type Import  =
  {  /// Required attribute - The path of the project file to import. The path can include wildcards. 
     /// The matching files are imported in sorted order.
@@ -29,7 +29,7 @@ let import project condition = { Project = project; Condition = condition }
 
 /// Contains a collection of Import elements that are grouped under an optional condition. 
 // https://msdn.microsoft.com/en-us/library/ff606262.aspx
-[<StructuredFormatDisplay("ImportGroup{\n{display\n}")>]
+[<StructuredFormatDisplay "ImportGroup{\n{display\n}">]
 type ImportGroup =
  {  Condition : Condition option
     Imports : Import list   
@@ -97,7 +97,7 @@ type Item =
 /// Contains a set of user-defined Item elements. Every item used in a MSBuild 
 /// project must be specified as a child of an ItemGroup element.
 // https://msdn.microsoft.com/en-us/library/646dk05y.aspx
-[<StructuredFormatDisplay("ItemGroup\n{display}")>]
+[<StructuredFormatDisplay "ItemGroup\n{display}">]
 type ItemGroup =
  {  Condition : Condition option
     /// Defines the inputs for the build process. There may be zero or more Item elements in an ItemGroup.

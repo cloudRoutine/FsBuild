@@ -30,4 +30,6 @@ module Prelude =
     let inline isNone x = Option.isNone x
     let inline isSome x = Option.isSome x
 
+    let inline cons x ls = (^a : (member Cons: ^b -> ^a) ls, x)
+
 

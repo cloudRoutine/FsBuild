@@ -64,6 +64,7 @@
     <Compile Include="Metadata.fs" />
     <None Include="Experiment.fsx" />
     <None Include="cexpr_test.fsx" />
+    <None Include="condstr.fsx" />
     <None Include="paket.references" />
     <None Include="paket.template" />
     <None Include="Reference\MSBuild.Community.Tasks.ReadMe.md" />

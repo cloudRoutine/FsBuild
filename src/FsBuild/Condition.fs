@@ -10,10 +10,65 @@ open System.Text
 // MSBuild Conditions
 // https://msdn.microsoft.com/en-us/library/7szfhaft.aspx
 
+   
+type Condition = { Expr: bool Expr }
+type hex = Hex 
+let  hex = Hex
+//    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = let x,y = sprintf "%x" a, sprintf "%x" b in {Expr = <@ x = y @>}
+    
+type EqualOp = EqualOp with 
+    static member inline (?<-)(_, a:decimal, b:decimal) = {Expr = <@ a = b @>}
+    static member inline (?<-)(_, a:string, b:string)   = {Expr = <@ a = b @>}
+    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a = b @>}
+    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d = b @>}
+    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a = d @>}
+
+type NotEqualOp = NotEqualOp with
+    static member inline (?<-)(_, a:decimal, b:decimal) = {Expr = <@ a <> b @>}
+    static member inline (?<-)(_, a:string, b:string )  = {Expr = <@ a <> b @>}
+    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d <> b @>}
+    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a <> d @>}
+type LessOp = LessOp with
+    static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a < b @>}
+    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a < b @>}
+    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d < b @>}
+    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a < d @>}
+
+type GreaterOp = GreaterOp with
+    static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a > b @>}
+    static member inline (?<-)(_, a:int    ,b:int    )  = {Expr = <@ a > b @>}
+    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d > b @>}
+    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a > d @>}
+
+type LessEqualsOp = LessEqualsOp with
+    static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a <= b @>}
+    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a <= b @>}
+    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d <= b @>}
+    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a <= d @>}
+
+type GreaterEqualsOp = GreaterEqualsOp with
+    static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a >= b @>}
+    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a >= b @>}
+    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d >= b @>}
+    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a >= d @>}
+
+let inline (|=|)  a b = (?<-) EqualOp a b
+let inline (|<>|) a b = (?<-) NotEqualOp a b
+let inline (|>|)  a b = (?<-) LessOp a b
+let inline (|<|)  a b = (?<-) GreaterOp a b
+let inline (|>=|) a b = (?<-) LessEqualsOp a b
+let inline (|<=|) a b = (?<-) GreaterEqualsOp a b
+
+let (|&|) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr && %c2.Expr @>}
+let (|!|) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr || %c2.Expr @>}
+let  NOT  (cd:Condition)                = {Expr = <@ not %cd.Expr @>}
+
+
+
 let squote s = String.Concat["'";s;"'"]
 let (|SCall|_|) = (|SpecificCall|_|)
 
-let condstr expr = 
+let condstr (cond:Condition) = 
     let sb = StringBuilder()
     let inline append (s:^a) = sb.Append s |> ignore
     let inline strappend x = (string>>append) x
@@ -30,78 +85,32 @@ let condstr expr =
         
     and inline parenls ls = append "("; loopls ls; append ")"
     /// paren + append + loop list
-    and inline pals hd str tl = paren hd; append str; loopls tl
+    and inline pals lex str rex = paren lex; append str; loopls rex
+    /// paren + append + paren
+    and inline pap lex str rex = paren lex; append str; paren rex
     and loop expr =
         match expr with
-        | Value( value,_) -> strappend value
-        | SCall<@not@>(_,_,[x]) -> append "!"; paren x
-        | SCall<@not@>(_,_,els) -> append "!"; parenls els 
-        | SCall<@(=)@>(_,_,le::[re]) -> paren le; append" == "; paren re
-        | SCall<@(=)@>(_,_,hd::tl) -> pals hd " == " tl
-        | SCall<@(>)@>(_,_,hd::tl) ->  pals hd " &gt; " tl
-        | SCall<@(<)@>(_,_,hd::tl) ->  pals hd " &lt; " tl
-        | SCall<@(>=)@>(_,_,hd::tl) -> pals hd " &gt;= "  tl
-        | SCall<@(<=)@>(_,_,hd::tl) -> pals hd " &lt;= " tl
-        | _ -> (string >> append) expr
-    loop expr
+        | Value(value,_) -> strappend value
+        | SCall<@not@> (_,_,[x]) -> append "!"; paren x
+        | SCall<@not@> (_,_,els) -> append "!"; parenls els 
+        | SCall<@(=)@> (_,_,lex::[rex]) -> pap  lex " == "    rex
+        | SCall<@(=)@> (_,_,lex::rex)   -> pals lex " == "    rex
+        | SCall<@(>)@> (_,_,lex::rex)   -> pals lex " &gt; "  rex
+        | SCall<@(>)@> (_,_,lex::[rex]) -> pap  lex " == "    rex
+        | SCall<@(<)@> (_,_,lex::rex)   -> pals lex " &lt; "  rex
+        | SCall<@(<)@> (_,_,lex::[rex]) -> pap  lex " == "    rex
+        | SCall<@(>=)@>(_,_,lex::rex)   -> pals lex " &gt;= " rex
+        | SCall<@(>=)@>(_,_,lex::[rex]) -> pap  lex " == "    rex
+        | SCall<@(<=)@>(_,_,lex::rex)   -> pals lex " &lt;= " rex
+        | SCall<@(<=)@>(_,_,lex::[rex]) -> pap  lex " == "    rex
+        | SCall<@(<>)@>(_,_,lex::rex)   -> pals lex " != "    rex
+        | SCall<@(<>)@>(_,_,lex::[rex]) -> pap  lex " != "    rex        
+        | IfThenElse   (lex,_, rex)     -> pap  lex " || "    rex  // Call expr,Value true,Call expr is the pattern for OR
+        | IfThenElse   (lex,rex,_)      -> pap  lex " && "    rex  // Call expr,Call expr,Value false is the pattern for AND 
+        | SCall<@(&&)@>(_,_,lex::rex)   -> pals lex " && "    rex
+        | SCall<@(&&)@>(_,_,lex::[rex]) -> pap  lex " && "    rex  
+        | SCall<@(||)@>(_,_,lex::rex)   -> pals lex " || "    rex
+        | SCall<@(||)@>(_,_,lex::[rex]) -> pap  lex " || "    rex  
+        | _ -> (string>>append) expr
+    loop cond.Expr
     string sb
-
-   
-type Condition = { Expr: bool Expr }
-type hex = Hex 
-let  hex = Hex
-    
-type EqualOp = EqualOp with
-    static member inline (?<-)(_, a:decimal, b:decimal)         = {Expr = <@ a = b @>}
-    static member inline (?<-)(_, a:string, b:string)           = {Expr = <@ a = b @>}
-    static member inline (?<-)(_, a:int, b:int)                 = {Expr = <@ a = b @>}
-    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = {Expr = <@(sprintf "%x" a) = (sprintf "%x" b)@>}
-    static member inline (?<-)(_, a:int, (b,_):int*hex)         = {Expr = <@(sprintf "%d" a) = (sprintf "%x" b)@>}
-    static member inline (?<-)(_, (a,_):int*hex, b:int)         = {Expr = <@(sprintf "%x" a) = (sprintf "%d" b)@>}
-
-type NotEqualOp = NotEqualOp with
-    static member inline (?<-)(_, a:decimal, b:decimal)         = {Expr = <@ a <> b @>}
-    static member inline (?<-)(_, a:string, b:string )          = {Expr = <@ a <> b @>}
-    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = {Expr = <@(sprintf "%x" a) <> (sprintf "%x" b)@>}
-    static member inline (?<-)(_, a:int, (b,_):int*hex)         = {Expr = <@(sprintf "%d" a) <> (sprintf "%x" b)@>}
-    static member inline (?<-)(_, (a,_):int*hex, b:int)         = {Expr = <@(sprintf "%x" a) <> (sprintf "%d" b)@>}
-
-type LessOp = LessOp with
-    static member inline (?<-)(_,a:decimal,b:decimal)           = {Expr = <@ a < b @>}
-    static member inline (?<-)(_,a:int, b:int)                  = {Expr = <@ a < b @>}
-    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = {Expr = <@(sprintf "%x" a) < (sprintf "%x" b)@>}
-    static member inline (?<-)(_, a:int, (b,_):int*hex)         = {Expr = <@(sprintf "%d" a) < (sprintf "%x" b)@>}
-    static member inline (?<-)(_, (a,_):int*hex, b:int)         = {Expr = <@(sprintf "%x" a) < (sprintf "%d" b)@>}
-
-type GreaterOp = GreaterOp with
-    static member inline (?<-)(_,a:decimal,b:decimal)           = {Expr = <@ a > b @>}
-    static member inline (?<-)(_,a:int    ,b:int    )           = {Expr = <@ a > b @>}
-    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = {Expr = <@(sprintf "%x" a) > (sprintf "%x" b)@>}
-    static member inline (?<-)(_, a:int, (b,_):int*hex)         = {Expr = <@(sprintf "%d" a) > (sprintf "%x" b)@>}
-    static member inline (?<-)(_, (a,_):int*hex, b:int)         = {Expr = <@(sprintf "%x" a) > (sprintf "%d" b)@>}
-
-type LessEqualsOp = LessEqualsOp with
-    static member inline (?<-)(_,a:decimal,b:decimal)           = {Expr = <@ a <= b @>}
-    static member inline (?<-)(_,a:int, b:int)                  = {Expr = <@ a <= b @>}
-    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = {Expr = <@(sprintf "%x" a) <= (sprintf "%x" b)@>}
-    static member inline (?<-)(_, a:int, (b,_):int*hex)         = {Expr = <@(sprintf "%d" a) <= (sprintf "%x" b)@>}
-    static member inline (?<-)(_, (a,_):int*hex, b:int)         = {Expr = <@(sprintf "%x" a) <= (sprintf "%d" b)@>}
-    
-type GreaterEqualsOp = GreaterEqualsOp with
-    static member inline (?<-)(_,a:decimal,b:decimal)           = {Expr = <@ a >= b @>}
-    static member inline (?<-)(_,a:int, b:int)                  = {Expr = <@ a >= b @>}
-    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = {Expr = <@(sprintf "%x" a) >= (sprintf "%x" b)@>}
-    static member inline (?<-)(_, a:int, (b,_):int*hex)         = {Expr = <@(sprintf "%d" a) >= (sprintf "%x" b)@>}
-    static member inline (?<-)(_, (a,_):int*hex, b:int)         = {Expr = <@(sprintf "%x" a) >= (sprintf "%d" b)@>}
-
-let inline (|=|)  a b = (?<-) EqualOp a b
-let inline (|<>|) a b = (?<-) NotEqualOp a b
-let inline (|>|)  a b = (?<-) LessOp a b
-let inline (|<|)  a b = (?<-) GreaterOp a b
-let inline (|>=|) a b = (?<-) LessEqualsOp a b
-let inline (|<=|) a b = (?<-) GreaterEqualsOp a b
-
-let (|&|) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr && %c2.Expr @>}
-let (|!|) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr || %c2.Expr @>}
-let  Not  (cd:Condition)                = {Expr = <@ not %cd.Expr @>}
-

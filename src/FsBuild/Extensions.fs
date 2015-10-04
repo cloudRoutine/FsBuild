@@ -7,8 +7,15 @@ open System.Xml.Linq
 [<RequireQualifiedAccess>]
 module List =
     let cons x ls = x::ls
-    let conj x = List.rev >> cons x  >> List.rev  
+    let conj x ls = ls@[x]
 
+
+type System.String with
+    static member bookends front back (str:string) =
+        let len = str.Length 
+        if len = 0 || len = 1 then false 
+        else str.[0] = front && str.[len-1] = back 
+        
     
 type XNode with
         

@@ -1,5 +1,5 @@
 ﻿#r "System.Xml.Linq"
-#load "Prelude.fs" "Condition.fs" "Extensions.fs" "Structure.fs" "Cexprs.fs" "Metadata.fs"
+#load "Prelude.fs" "Extensions.fs" "Condition.fs"  "Structure.fs" "Cexprs.fs" "Metadata.fs"
 
 open System
 open Microsoft.FSharp.Quotations
@@ -69,7 +69,7 @@ let inline cpn x = (condstr>>printfn "%A") x
 let inline qpn x = (qstr>>printfn "%A") x
 ;;
 
-let condq = ("$(Configuration)"|=|"Debug")|!|(10.5m|>=|45.05m)|&|("Proj2"|<>|"")|!|(5|<|10)|&|(0x11|<=|0x5)|&|(NOT(5|>|3.0m));;
+let condq = ("$(Configuration)"|=|"Debug").||.(10.5m|>=|45.05m).&&.("Proj2"|<>|"").||.(5|<|10).&&.(0x11 |>=|0x5).&&.(NOT(5 |>|3.0m));;
 condq |> cpn
 
 

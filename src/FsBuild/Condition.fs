@@ -10,24 +10,36 @@ open System.Text
 // MSBuild Conditions
 // https://msdn.microsoft.com/en-us/library/7szfhaft.aspx
 
+//    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = let x,y = sprintf "%x" a, sprintf "%x" b in {Expr = <@ x = y @>}
+
+
    
 type Condition = { Expr: bool Expr }
 type hex = Hex 
 let  hex = Hex
-//    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = let x,y = sprintf "%x" a, sprintf "%x" b in {Expr = <@ x = y @>}
+
+/// Ensure strings are in proper formatting for msbuild xml
+let private fixstr s =
+    if String.IsNullOrWhiteSpace s then "\' \'"
+    elif String.bookends '\'' '\'' s then s
+    else sprintf "\'%s\'" s
     
 type EqualOp = EqualOp with 
+    static member inline (?<-)(_, a:string, b:string)   = let x = fixstr  a
+                                                          let y = fixstr  b in {Expr = <@ x = y @>}
     static member inline (?<-)(_, a:decimal, b:decimal) = {Expr = <@ a = b @>}
-    static member inline (?<-)(_, a:string, b:string)   = {Expr = <@ a = b @>}
     static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a = b @>}
     static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d = b @>}
     static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a = d @>}
 
 type NotEqualOp = NotEqualOp with
+    static member inline (?<-)(_, a:string, b:string )  = let x = fixstr  a
+                                                          let y = fixstr  b in {Expr = <@ x = y @>}
     static member inline (?<-)(_, a:decimal, b:decimal) = {Expr = <@ a <> b @>}
-    static member inline (?<-)(_, a:string, b:string )  = {Expr = <@ a <> b @>}
+    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a <> b @>}
     static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d <> b @>}
     static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a <> d @>}
+
 type LessOp = LessOp with
     static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a < b @>}
     static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a < b @>}
@@ -56,14 +68,12 @@ let inline (|=|)  a b = (?<-) EqualOp a b
 let inline (|<>|) a b = (?<-) NotEqualOp a b
 let inline (|>|)  a b = (?<-) LessOp a b
 let inline (|<|)  a b = (?<-) GreaterOp a b
-let inline (|>=|) a b = (?<-) LessEqualsOp a b
-let inline (|<=|) a b = (?<-) GreaterEqualsOp a b
+let inline (|<=|) a b = (?<-) LessEqualsOp a b
+let inline (|>=|) a b = (?<-) GreaterEqualsOp a b
 
-let (|&|) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr && %c2.Expr @>}
-let (|!|) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr || %c2.Expr @>}
-let  NOT  (cd:Condition)                = {Expr = <@ not %cd.Expr @>}
-
-
+let (.&&.) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr && %c2.Expr @>}
+let (.||.) (c1:Condition) (c2:Condition) = {Expr = <@ %c1.Expr || %c2.Expr @>}
+let  NOT   (cd:Condition)                = {Expr = <@ not %cd.Expr @>}
 
 let squote s = String.Concat["'";s;"'"]
 let (|SCall|_|) = (|SpecificCall|_|)
@@ -71,6 +81,8 @@ let (|SCall|_|) = (|SpecificCall|_|)
 let condstr (cond:Condition) = 
     let sb = StringBuilder()
     let inline append (s:^a) = sb.Append s |> ignore
+    let inline appendq s = sprintf "\'%s\'" s |> append
+    //let inline strappend x = (string>>append) x
     let inline strappend x = (string>>append) x
     
     let rec inline loopls ls  = List.iter loop ls
@@ -78,6 +90,7 @@ let condstr (cond:Condition) =
     /// If necessary surround the expression with parentheses
     and inline paren ex   = 
         match ex with
+        | Value(vl,s) when s = typeof<String> -> appendq (vl :?> string)
         | Value(vl,_) -> strappend vl
         | SCall<@not@>(_,_,[Value(vl,_)]) -> append "!";strappend vl
         | SCall<@not@>(_,_,SCall<@(=)@>(_,_,_)::[]) -> loop ex

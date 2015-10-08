@@ -16,7 +16,8 @@ type Import  =
     /// The matching files are imported in sorted order.
     Project     : string
     Condition   : Condition option 
- }  static member empty = { Project = ""; Condition = None }
+ }  
+    static member empty = { Project = ""; Condition = None }
     member private self.display =
         sprintf "{Import: Project - %s | Condition - %s}"
             self.Project (  if isNone self.Condition 
@@ -33,7 +34,8 @@ let import project condition = { Project = project; Condition = condition }
 type ImportGroup =
  {  Condition : Condition option
     Imports : Import list   
- } 
+ }  /// An empty ImportGroup
+    static member empty = { Condition = None; Imports = [] }
     /// Add an Import to the front of the ImportGroup's collection
     member self.Cons ipr = { self with Imports = ipr::self.Imports}
     /// Add an Import to the end of the ImportGroup's collection
@@ -43,8 +45,7 @@ type ImportGroup =
     /// New ImportGroup with a different Condition
     member self.WithCondition cond = { self with Condition = Some cond }
 
-    /// An empty ImportGroup
-    static member empty = { Condition = None; Imports = [] }
+   
     member private self.display =
         (StringBuilder().AppendLine(
             "Condition : " + (  if Option.isSome self.Condition 
@@ -62,7 +63,7 @@ type ItemMetadata =
  {  /// This text specifies the item metadata value, which can be either text or XML.
     Value : string
     Condition : Condition option  
- }
+ }  static member empty = { Value = ""; Condition = None }
 
 
  
@@ -91,7 +92,17 @@ type Item =
     KeepDuplicates : bool option
     /// There may be zero or more ItemMetadata elements in an item.
     Children : ItemMetadata list
- }
+ }  
+    static member empty = 
+     {  Include        = String.Empty
+        Exclude        = String.Empty
+        Remove         = String.Empty
+        Condition      = None
+        KeepDuplicates = None
+        KeepMetadata   = []
+        RemoveMetadata = []
+        Children       = []
+     }
 
 
 /// Contains a set of user-defined Item elements. Every item used in a MSBuild 
@@ -102,7 +113,8 @@ type ItemGroup =
  {  Condition : Condition option
     /// Defines the inputs for the build process. There may be zero or more Item elements in an ItemGroup.
     Children : Item list
-    } member private self.display =
+ }  static member empty = { Condition = None; Children = [] }
+    member private self.display =
         (StringBuilder().AppendLine(
             "Condition : " + (  if Option.isSome self.Condition 
                                 then string self.Condition.Value else ""))
@@ -110,6 +122,8 @@ type ItemGroup =
             self.Children |> string
     override self.ToString() =
         sprintf "ItemGroup\n%s" self.display
+
+
 /// The ItemDefinitionGroup element lets you define a set of Item Definitions, 
 /// which are metadata values that are applied to all items in the project, by default. 
 //  https://msdn.microsoft.com/en-us/library/bb629392.aspx
@@ -117,15 +131,16 @@ type ItemDefinitionGroup =
  {  /// There may be zero or more Item elements in an ItemDefinitionGroup  
     Children : Item list
     Condition : Condition option
-     
-    }
+ }  
+    static member empty = { Condition = None; Children = [] }
 
 /// Contains a user defined property name and value. Every property used in 
 /// an MSBuild project must be specified as a child of a PropertyGroup element.
 //  https://msdn.microsoft.com/en-us/library/ms164288.aspx
 type Property =
- {  Condition : Condition
-    /// A text value is optional -this text specifies the property value and may contain XML.
+ {  Condition : Condition option
+    /// A text value is optional 
+    /// - this text specifies the property value and may contain XML.
     Value : string
     (*  Remarks -
         Property names are limited to ASCII chars only. Property values are 
@@ -133,15 +148,17 @@ type Property =
         "$(" and ")". For example, $(builddir)\classes would resolve to 
         "build\classes", if the builddir property had the value build.
     *)
- }
+ }  
+    static member empty = { Condition = None; Value = String.Empty }
 
 /// Contains a set of user-defined Property elements. Every Property element
 ///  used in an MSBuild project must be a child of a PropertyGroup element.
 //  https://msdn.microsoft.com/en-us/library/t4w159bs.aspx
 type PropertyGroup =
- {  Condition : Condition
+ {  Condition : Condition option
     Children : Property list
- }
+ }  
+    static member empty = { Condition = None; Children = [] }
 
 
 
@@ -150,7 +167,7 @@ type PropertyGroup =
 type Output = 
  {  /// Required attribute - The name of the task's output parameter.
     TaskParameter : string
-    Condition : Condition option
+    Condition     : Condition option
     (*
         PropertyName
         Either the PropertyName or ItemName attribute is required.
@@ -169,7 +186,13 @@ type Output =
     *)
     PropertyName : string
     ItemName     : string
-    }
+ }  
+    static member empty = 
+     {  TaskParameter = String.Empty
+        Condition     = None
+        PropertyName  = String.Empty
+        ItemName      = String.Empty
+     }
 
 
 /// Causes one or more targets to execute, if the ContinueOnError attribute is false for a failed task.
@@ -179,7 +202,8 @@ type OnError =
     /// Multiple targets are executed in the order specified.
     ExecuteTargets : string list
     Condition : Condition option
-    }
+ }  
+    static member empty = { ExecuteTargets = []; Condition = None }
 
 
 /// Contains information about a specific parameter for a task that is generated 
@@ -187,14 +211,14 @@ type OnError =
 //  https://msdn.microsoft.com/en-us/library/ff606257.aspx
 type Parameter =
  {  /// Optional attribute - The .NET type of the parameter, for example, "System.String".
-    ParameterType : Type
+    ParameterType : Type option
     /// Optional Boolean attribute - If true, this parameter is an output 
     /// parameter for the task. By default, the value is false.
-    Output : bool
+    Output : bool option
     /// Optional Boolean attribute. - If true, this parameter is an required 
     /// parameter for the task. By default, the value is false
-    Required : bool
-    }
+    Required : bool option
+ }  static member empty = { ParameterType = None; Output = None; Required = None }
 
 
 /// Contains an optional list of parameters that will be present on
@@ -202,7 +226,8 @@ type Parameter =
 //  https://msdn.microsoft.com/en-us/library/ff606260.aspx
 type ParameterGroup =
  {  Children : Parameter list
-    }
+ }  
+    static member empty = { Children = [] }
 
 
 /// Creates and executes an instance of an MSBuild task. The element name is 
@@ -224,8 +249,9 @@ type Task =
         ErrorAndStop or false (default). When a task fails, the remaining tasks in the Target element and the build aren't executed, and the entire Target element and the build is considered to have failed.
         Versions of the .NET Framework before 4.5 supported only the true and false values.
     *)
-    ContinueOnError : bool // <- not the right type
-    }
+    ContinueOnError : bool option
+ }  
+    static member empty = { Condition = None; Parameter = []; ContinueOnError = None }
 
 
 (*  Remarks on Tasks -
@@ -247,10 +273,10 @@ type TaskBody =
  {  /// Optional Boolean attribute - If true, MSBuild evaluates any inner elements, 
     /// and expands items and properties before it passes the information to the 
     /// TaskFactory when the task is instantiated
-    Evaluate : bool
+    Evaluate : bool option
     /// The text between the TaskBody tags is sent verbatim to the TaskFactory
-    Data : string
- }
+    Value : string
+ }  static member empty = { Evaluate = None; Value = String.Empty }
 
 
 /// Maps the task that is referenced in a Task element to the assembly that contains the task implementation.
@@ -265,21 +291,21 @@ type UsingTask =
     /// Optional attribute - Specifies the class in the assembly that is responsible for generating instances 
     /// of the specified Task name.  The user may also specify a TaskBody as a child element that the task factory 
     /// receives and uses to generate the task. The contents of the TaskBody are specific to the task factory.
-    TaskFactory : string 
+    TaskFactory  : string 
     AssemblyFile : string
     AssemblyName : string
     (*
-    Either the AssemblyName attribute or the AssemblyFile attribute is required.
-    The name of the assembly to load. The AssemblyName attribute accepts strong-named assemblies, 
-    although strong-naming is not required. Using this attribute is equivalent to loading an assembly 
-    by using the Load method in .NET.
+        Either the AssemblyName attribute or the AssemblyFile attribute is required.
+        The name of the assembly to load. The AssemblyName attribute accepts strong-named assemblies, 
+        although strong-naming is not required. Using this attribute is equivalent to loading an assembly 
+        by using the Load method in .NET.
 
-    You cannot use this attribute if the AssemblyFile attribute is used.
+        You cannot use this attribute if the AssemblyFile attribute is used.
 
-    AssemblyFile
-    Either the AssemblyName or the AssemblyFile attribute is required.
-    The file path of the assembly. This attribute accepts full paths or relative paths. Relative paths are relative to the directory of the project file or targets file where the UsingTask element is declared. Using this attribute is equivalent to loading an assembly by using the LoadFrom method in .NET.
-    You cannot use this attribute if the AssemblyName attribute is used.
+        AssemblyFile
+        Either the AssemblyName or the AssemblyFile attribute is required.
+        The file path of the assembly. This attribute accepts full paths or relative paths. Relative paths are relative to the directory of the project file or targets file where the UsingTask element is declared. Using this attribute is equivalent to loading an assembly by using the LoadFrom method in .NET.
+        You cannot use this attribute if the AssemblyName attribute is used.
     
     *)
     /// The data that is passed to the TaskFactory to generate an instance of the task.
@@ -287,14 +313,22 @@ type UsingTask =
     /// The set of parameters that appear on the task that is generated by the specified TaskFactory.
     Children : ParameterGroup list
 
-    }
+ }  static member empty =
+     {  Condition       = None
+        TaskName        = String.Empty
+        TaskFactory     = String.Empty
+        AssemblyFile    = String.Empty
+        AssemblyName    = String.Empty
+        TaskBody        = None
+        Children        = []
+     }
 
 
 type TargetNode =
-    | Task of Task
+    | Task          of Task
     | PropertyGroup of PropertyGroup
-    | ItemGroup of ItemGroup
-    | OnError of OnError
+    | ItemGroup     of ItemGroup
+    | OnError       of OnError
 
  /// Contains a set of tasks for MSBuild to execute sequentially.
  //  https://msdn.microsoft.com/en-us/library/t50z2hka.aspx
@@ -317,7 +351,7 @@ type Target =
     BeforeTargets : string list
     /// Optional Boolean attribute -If true, multiple references to the same item in 
     /// the target's Returns are recorded. By default, this attribute is false.
-    KeepDuplicateOutputs : bool
+    KeepDuplicateOutputs : bool option
     /// Optional attribute -The files that form inputs into this target. Multiple files are 
     /// separated by semicolons. The timestamps of the files will be compared with the 
     /// timestamps of files in Outputs to determine whether the Target is up to date. 
@@ -331,9 +365,20 @@ type Target =
     /// If the targets in the file have no Returns attributes, the Outputs attributes are used instead for this purpose.
     Returns : string list // <- unclear on what this type should be
     Children : TargetNode list
-    
-    
-    }
+ }  
+    static member empty =
+     {  Name                 = String.Empty
+        Label                = String.Empty
+        Condition            = None
+        DependsOnTargets     = []
+        AfterTargets         = []
+        BeforeTargets        = []
+        KeepDuplicateOutputs = None
+        Inputs               = []
+        Outputs              = []
+        Returns              = []
+        Children             = []
+     }
 
 (*  Reference Related to Targets
         - MSBuild Transforms - https://msdn.microsoft.com/en-us/library/ms171476.aspx
@@ -388,7 +433,12 @@ type Choose =
     Otherwise : Otherwise option
     /// Any additional whens in the choose
     Children : When list
-    }
+ }
+    static member empty =
+     {  When        = When.empty
+        Otherwise   = None
+        Children    = []
+     }
 /// Specifies a possible block of code for the Choose element to select.
 //  https://msdn.microsoft.com/en-us/library/ms164289.aspx
 and When =
@@ -403,7 +453,14 @@ and When =
     /// Optional element. Contains a set of user-defined Property elements. There may be zero or 
     /// more PropertyGroup elements in an When element.
     ProperyGroupList: PropertyGroup list
-    }
+  } 
+    static member empty =
+     {  Condition        = Condition.empty
+        ChooseList       = []
+        ItemGroupList    = []
+        ProperyGroupList = []
+     }
+
 /// Specifies the block of code to execute if and only if the conditions of all When elements evaluate to false.
 //  https://msdn.microsoft.com/en-us/library/ms164286.aspx
 and Otherwise =
@@ -416,12 +473,12 @@ and Otherwise =
     /// Optional element. Contains a set of user-defined Property elements. There may be zero or 
     /// more PropertyGroup elements in an Otherwise element.
     ProperyGroupList: PropertyGroup list
- }
-    static member Default = {
-        ChooseList       = []
+ }  
+    static member empty = 
+     {  ChooseList       = []
         ItemGroupList    = []
         ProperyGroupList = []
-    }
+     }
 
 (*
     The Choose, When, and Otherwise elements are used together to provide a way to select 
@@ -433,17 +490,19 @@ and Otherwise =
 /// Allows MSBuild project files to contain non-MSBuild information. Anything inside of a 
 /// ProjectExtensions element will be ignored by MSBuild
 //  https://msdn.microsoft.com/en-us/library/ycwcwzs7.aspx
-type ProjectExtensions = { Value : string  }
+type ProjectExtensions = 
+ {  Value : string  }
+    static member empty = { Value = String.Empty }
  
 /// Child elements of a project
 /// Projects can contain zero or more of each of these elements
 type ProjectNode =
-    | Choose of Choose
-    | Import of Import
-    | ItemGroup of ItemGroup
+    | Choose        of Choose
+    | Import        of Import
+    | ItemGroup     of ItemGroup
     | PropertyGroup of PropertyGroup
-    | Target of Target
-    | UsingTask of UsingTask
+    | Target        of Target
+    | UsingTask     of UsingTask
 
 
 /// Required root element of an MSBuild project file.
@@ -453,23 +512,34 @@ type Project =
     /// Optional attribute - The default target or targets to be the entry point of the build if no target has been specified. 
     /// If no default target is specified in either the engine executes the first target 
     /// in the project file after the Import elements have been evaluated.
-    DefaultTargets : string list
+    DefaultTargets       : string list
     /// Optional attribute - The initial target or targets to be run before the targets specified 
     /// in the DefaultTargets attribute or on the command line. Multiple targets are semi-colon (;) delimited.
-    InitialTargets : string list
+    InitialTargets       : string list
     TreatAsLocalProperty : string list
     /// Optional attribute - The version of the toolset MSBuild uses to determine the values for 
     /// $(MSBuildBinPath) and $(MSBuildToolsPath).
-    ToolsVersion : string option
+    ToolsVersion         : string option
 
     /// Provides a way to persist non-MSBuild information in an MSBuild project file. 
     /// There may be zero or one ProjectExtensions elements in a project.
-    ProjectExtensions : ProjectExtensions option
-    Children : ProjectNode list   
-    }
+    ProjectExtensions    : ProjectExtensions option
+    Children             : ProjectNode list   
+ }
     /// Required attribute.
     /// The xmlns attribute must have the value of "http://schemas.microsoft.com/developer/msbuild/2003".
     static member Xmlns = "http://schemas.microsoft.com/developer/msbuild/2003"
+
+    static member empty =
+     {  DefaultTargets       = []
+        InitialTargets       = []
+        TreatAsLocalProperty = []
+        ToolsVersion         = None
+        ProjectExtensions    = None
+        Children             = []
+     }
+
+
 
 // TODO / NOTE - Maybe the targets should be Target lists not string lists
 

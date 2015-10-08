@@ -1,4 +1,6 @@
-﻿[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+﻿[<  AutoOpen
+;   CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)
+>]
 module FsBuild.Condition
 
 open System
@@ -10,7 +12,6 @@ open System.Text
 // MSBuild Conditions
 // https://msdn.microsoft.com/en-us/library/7szfhaft.aspx
 
-//    static member inline (?<-)(_, (a,_):int*hex, (b,_):int*hex) = let x,y = sprintf "%x" a, sprintf "%x" b in {Expr = <@ x = y @>}
    
 type Condition = { Expr: bool Expr }
 type hex = Hex 
@@ -22,45 +23,47 @@ let fixstr s =
     elif String.bookends '\'' '\'' s then s
     else sprintf "\'%s\'" s
     
+
 type EqualOp = EqualOp with
-    static member inline (?<-)(_, a:string, b:string)   = let x = fixstr  a
-                                                          let y = fixstr  b in {Expr = <@ x = y @>}
-    static member inline (?<-)(_, a:decimal, b:decimal) = {Expr = <@ a = b @>}
-    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a = b @>}
-    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d = b @>}
-    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a = d @>}
+    static member inline (?<-)(_, a:string , b:string ) =   let x = fixstr  a
+                                                            let y = fixstr  b in {Expr = <@ x = y @>}
+    static member inline (?<-)(_, a:decimal, b:decimal) =   {Expr = <@ a = b @>}
+    static member inline (?<-)(_, a:int    , b:int    ) =   {Expr = <@ a = b @>}
+    static member inline (?<-)(_, a:int    , b:decimal) =   let d = decimal a in {Expr = <@ d = b @>}
+    static member inline (?<-)(_, a:decimal, b:int    ) =   let d = decimal b in {Expr = <@ a = d @>}
 
 type NotEqualOp = NotEqualOp with
-    static member inline (?<-)(_, a:string, b:string )  = let x = fixstr  a
-                                                          let y = fixstr  b in {Expr = <@ x = y @>}
-    static member inline (?<-)(_, a:decimal, b:decimal) = {Expr = <@ a <> b @>}
-    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a <> b @>}
-    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d <> b @>}
-    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a <> d @>}
+    static member inline (?<-)(_, a:string , b:string ) =   let x = fixstr  a
+                                                            let y = fixstr  b in {Expr = <@ x = y @>}
+    static member inline (?<-)(_, a:decimal, b:decimal) =   {Expr = <@ a <> b @>}
+    static member inline (?<-)(_, a:int    , b:int    ) =   {Expr = <@ a <> b @>}
+    static member inline (?<-)(_, a:int    , b:decimal) =   let d = decimal a in {Expr = <@ d <> b @>}
+    static member inline (?<-)(_, a:decimal, b:int    ) =   let d = decimal b in {Expr = <@ a <> d @>}
 
-type LessOp =  LessOp with
-    static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a < b @>}
-    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a < b @>}
-    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d < b @>}
-    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a < d @>}
+type LessOp = LessOp with
+    static member inline (?<-)(_, a:decimal, b:decimal) =   {Expr = <@ a < b @>}
+    static member inline (?<-)(_, a:int    , b:int    ) =   {Expr = <@ a < b @>}
+    static member inline (?<-)(_, a:int    , b:decimal) =   let d = decimal a in {Expr = <@ d < b @>}
+    static member inline (?<-)(_, a:decimal, b:int    ) =   let d = decimal b in {Expr = <@ a < d @>}
 
 type GreaterOp = GreaterOp with
-    static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a > b @>}
-    static member inline (?<-)(_, a:int    ,b:int    )  = {Expr = <@ a > b @>}
-    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d > b @>}
-    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a > d @>}
+    static member inline (?<-)(_, a:decimal, b:decimal) =   {Expr = <@ a > b @>}
+    static member inline (?<-)(_, a:int    , b:int    ) =   {Expr = <@ a > b @>}
+    static member inline (?<-)(_, a:int    , b:decimal) =   let d = decimal a in {Expr = <@ d > b @>}
+    static member inline (?<-)(_, a:decimal, b:int    ) =   let d = decimal b in {Expr = <@ a > d @>}
 
-type LessEqualsOp  = LessEqualsOp  with
-    static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a <= b @>}
-    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a <= b @>}
-    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d <= b @>}
-    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a <= d @>}
+type LessEqualsOp = LessEqualsOp  with
+    static member inline (?<-)(_, a:decimal, b:decimal) =   {Expr = <@ a <= b @>}
+    static member inline (?<-)(_, a:int    , b:int    ) =   {Expr = <@ a <= b @>}
+    static member inline (?<-)(_, a:int    , b:decimal) =   let d = decimal a in {Expr = <@ d <= b @>}
+    static member inline (?<-)(_, a:decimal, b:int    ) =   let d = decimal b in {Expr = <@ a <= d @>}
 
 type GreaterEqualsOp = GreaterEqualsOp with
-    static member inline (?<-)(_, a:decimal,b:decimal)  = {Expr = <@ a >= b @>}
-    static member inline (?<-)(_, a:int, b:int)         = {Expr = <@ a >= b @>}
-    static member inline (?<-)(_, a:int, b:decimal)     = let d = decimal a in {Expr = <@ d >= b @>}
-    static member inline (?<-)(_, a:decimal, b:int)     = let d = decimal b in {Expr = <@ a >= d @>}
+    static member inline (?<-)(_, a:decimal, b:decimal) =   {Expr = <@ a >= b @>}
+    static member inline (?<-)(_, a:int    , b:int    ) =   {Expr = <@ a >= b @>}
+    static member inline (?<-)(_, a:int    , b:decimal) =   let d = decimal a in {Expr = <@ d >= b @>}
+    static member inline (?<-)(_, a:decimal, b:int    ) =   let d = decimal b in {Expr = <@ a >= d @>}
+
 
 let inline (|=|)  a b = (?<-) EqualOp         a b
 let inline (|<>|) a b = (?<-) NotEqualOp      a b

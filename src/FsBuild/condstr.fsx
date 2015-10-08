@@ -32,15 +32,15 @@ let qstr expr =
         | _ -> append "("; loop ex; append ")"
         
     and inline parenls ls = append "("; loopls ls; append ")"
-    /// paren + append + loop list
     and inline pals lex str rex = paren lex; append str; loopls rex
-    /// paren + append + paren
-    and inline pap lex str rex = paren lex; append str; paren rex
+    and inline pap  lex str rex = paren lex; append str; paren  rex
     and loop expr =
         match expr with
-        | Value(value,t) -> strappend value
-        | SCall<@not@> (_,_,[x]) -> append "!"; paren x
-        | SCall<@not@> (_,_,els) -> append "!"; parenls els 
+        | Value(value,_)                -> strappend value
+        | SCall<@not@> (_,_,[x])        -> append "!"; paren x
+        | SCall<@not@> (_,_,els)        -> append "!"; parenls els 
+        | IfThenElse(lex,Value _, rex)  -> pap  lex " || "    rex
+        | IfThenElse(lex,rex,Value _)   -> pap  lex " && "    rex        
         | SCall<@(=)@> (_,_,lex::[rex]) -> pap  lex " == "    rex
         | SCall<@(=)@> (_,_,lex::rex)   -> pals lex " == "    rex
         | SCall<@(>)@> (_,_,lex::rex)   -> pals lex " &gt; "  rex
@@ -53,13 +53,12 @@ let qstr expr =
         | SCall<@(<=)@>(_,_,lex::[rex]) -> pap  lex " == "    rex
         | SCall<@(<>)@>(_,_,lex::rex)   -> pals lex " != "    rex
         | SCall<@(<>)@>(_,_,lex::[rex]) -> pap  lex " != "    rex        
-        | IfThenElse(l,Value p, r) -> paren l; append " || ";paren r
-        | IfThenElse(l,r,Value p)  -> paren l; append " && ";paren r
         | SCall<@(&&)@>(_,_,lex::rex)   -> pals lex " && "    rex
         | SCall<@(&&)@>(_,_,lex::[rex]) -> pap  lex " && "    rex  
         | SCall<@(||)@>(_,_,lex::rex)   -> pals lex " || "    rex
         | SCall<@(||)@>(_,_,lex::[rex]) -> pap  lex " || "    rex  
-        | _ -> (string>>append) expr
+        | _                             -> 
+            failwithf "%s is not a valid expression for an MSBuild conditional" (string expr)
     loop expr
     string sb
 

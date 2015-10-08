@@ -5,6 +5,7 @@
 *.suo
 *.user
 *.sln.docstates
+src/FsBuild/scratch/*
 
 # Xamarin Studio / monodevelop user-specific
 *.userprefs

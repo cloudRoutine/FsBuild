@@ -2,11 +2,7 @@
 
 open System
 open System.Text
-open FsBuild.Condition
 
-
-let inline getChildren  x = (^a : (member Children  : 'c list ) x)
-let inline getCondition x = (^a : (member Condition : Condition ) x)
 
 /// Imports the contents of one project file into another project file.
 // https://msdn.microsoft.com/en-us/library/92x05xfs.aspx
@@ -33,7 +29,7 @@ let import project condition = { Project = project; Condition = condition }
 [<StructuredFormatDisplay "ImportGroup{\n{display\n}">]
 type ImportGroup =
  {  Condition : Condition option
-    Imports : Import list   
+    Imports   : Import list   
  }  /// An empty ImportGroup
     static member empty = { Condition = None; Imports = [] }
     /// Add an Import to the front of the ImportGroup's collection
@@ -512,10 +508,10 @@ type Project =
     /// Optional attribute - The default target or targets to be the entry point of the build if no target has been specified. 
     /// If no default target is specified in either the engine executes the first target 
     /// in the project file after the Import elements have been evaluated.
-    DefaultTargets       : string list
+    DefaultTargets       : Target list
     /// Optional attribute - The initial target or targets to be run before the targets specified 
     /// in the DefaultTargets attribute or on the command line. Multiple targets are semi-colon (;) delimited.
-    InitialTargets       : string list
+    InitialTargets       : Target list
     TreatAsLocalProperty : string list
     /// Optional attribute - The version of the toolset MSBuild uses to determine the values for 
     /// $(MSBuildBinPath) and $(MSBuildToolsPath).
@@ -557,4 +553,39 @@ type Project =
     -- https://msdn.microsoft.com/en-us/library/ms171481.aspx
 
 *)
+
+let inline getChildren  x = (^a : (member Children  : 'c list ) x)
+let inline getCondition x = (^a : (member Condition : Condition ) x)
+
+// Generic pattern to allow consChild, conjChild, appendChildren, and prependChildren to work on all
+// record types that contain children. Then uses those functions to create extension method that is
+// applied to all of the record types that statisfy the property constraint of having an 'a list 
+// named Children. 
+
+type RecordChildren = RecordChildren with
+    static member inline (?<-) (_, rcd:Item               , ls) = { rcd with Children = ls }
+    static member inline (?<-) (_, rcd:ItemGroup          , ls) = { rcd with Children = ls }
+    static member inline (?<-) (_, rcd:ItemDefinitionGroup, ls) = { rcd with Children = ls }
+    static member inline (?<-) (_, rcd:PropertyGroup      , ls) = { rcd with Children = ls }
+    static member inline (?<-) (_, rcd:ParameterGroup     , ls) = { rcd with Children = ls }
+    static member inline (?<-) (_, rcd:UsingTask          , ls) = { rcd with Children = ls }
+    static member inline (?<-) (_, rcd:Target             , ls) = { rcd with Children = ls }
+    static member inline (?<-) (_, rcd:Choose             , ls) = { rcd with Children = ls }
+    static member inline (?<-) (_, rcd:Project            , ls) = { rcd with Children = ls }
+
+
+let inline consChild       elm rcd = (?<-) RecordChildren rcd (elm::(^a:(member Children:^b list)rcd)         ) 
+let inline conjChild       elm rcd = (?<-) RecordChildren rcd (List.conj elm (^a:(member Children:^b list)rcd)) 
+let inline appendChildren  ls  rcd = (?<-) RecordChildren rcd ((^a:(member Children:^b list)rcd) @ ls         ) 
+let inline prependChildren ls  rcd = (?<-) RecordChildren rcd (ls @ (^a:(member Children:^b list)rcd)         ) 
+
+
+open System.Runtime.CompilerServices
+[<Extension>]
+type RecordExtensions() =
+    [<Extension>] static member inline  ConsChild       (rcd, elm) = consChild       elm rcd
+    [<Extension>] static member inline  ConjChild       (rcd, elm) = conjChild       elm rcd
+    [<Extension>] static member inline  AppendChildren  (rcd, ls ) = appendChildren  ls  rcd
+    [<Extension>] static member inline  PrependChildren (rcd, ls ) = prependChildren ls  rcd
+
 

@@ -67,8 +67,8 @@ type GreaterEqualsOp = GreaterEqualsOp with
 
 let inline (|=|)  a b = (?<-) EqualOp         a b
 let inline (|<>|) a b = (?<-) NotEqualOp      a b
-let inline (|>|)  a b = (?<-) LessOp          a b
-let inline (|<|)  a b = (?<-) GreaterOp       a b
+let inline (|>|)  a b = (?<-) GreaterOp       a b
+let inline (|<|)  a b = (?<-) LessOp          a b
 let inline (|<=|) a b = (?<-) LessEqualsOp    a b
 let inline (|>=|) a b = (?<-) GreaterEqualsOp a b
 
